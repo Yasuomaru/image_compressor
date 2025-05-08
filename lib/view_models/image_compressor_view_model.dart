@@ -108,13 +108,49 @@ class ImageCompressorViewModel extends ChangeNotifier {
       );
 
       if (path != null) {
-        await imageFile.copy(path);
+        // Create a new file at the destination path
+        final destinationFile = File(path);
+        
+        // Check if the destination directory exists
+        final directory = Directory(destinationFile.parent.path);
+        if (!await directory.exists()) {
+          await directory.create(recursive: true);
+        }
+        
+        // Read bytes from source and write to destination
+        final bytes = await imageFile.readAsBytes();
+        await destinationFile.writeAsBytes(bytes);
+        
+        print("Image successfully saved to: $path");
         return path;
       }
       return null;
     } catch (e) {
       print("Error saving image: $e");
+      // Try alternate saving method on error
+      if (Platform.isMacOS) {
+        try {
+          return await _saveImageMacOSFallback(imageFile, quality);
+        } catch (fallbackError) {
+          print("Fallback save failed: $fallbackError");
+        }
+      }
       rethrow;
     }
+  }
+
+  // Add a macOS-specific fallback method
+  Future<String?> _saveImageMacOSFallback(File imageFile, int quality) async {
+    // Get the Downloads folder - a common location accessible on macOS
+    final downloadsDir = '${Platform.environment['HOME']}/Downloads';
+    final fileName = quality == 0
+        ? 'original_image.jpg'
+        : 'compressed_${quality}_percent.jpg';
+    final savePath = '$downloadsDir/$fileName';
+    
+    // Copy the file directly to Downloads
+    await imageFile.copy(savePath);
+    print("Image saved to Downloads folder: $savePath");
+    return savePath;
   }
 }
