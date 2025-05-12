@@ -8,11 +8,11 @@ class ImagePreviewDialog extends StatelessWidget {
   final ImageCompressorViewModel viewModel;
 
   const ImagePreviewDialog({
-    Key? key,
+    super.key,
     required this.imageFile,
     required this.quality,
     required this.viewModel,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -55,12 +55,17 @@ class ImagePreviewDialog extends StatelessWidget {
   Future<void> _saveImage(BuildContext context) async {
     try {
       final path = await viewModel.saveImageToComputer(imageFile, quality);
+
+      if (!context.mounted) return;
+
       if (path != null) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Image saved to: $path')));
       }
     } catch (e) {
+      if (!context.mounted) return;
+
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error saving image: $e')));

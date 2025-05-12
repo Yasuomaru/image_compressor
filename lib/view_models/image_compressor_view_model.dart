@@ -37,14 +37,14 @@ class ImageCompressorViewModel extends ChangeNotifier {
       _isProcessing = true;
       notifyListeners();
 
-      print("Starting compression for: ${file.path}");
+      // print("Starting compression for: ${file.path}");
       final qualities = [90, 70, 50, 30];
       final tempDir = await getTemporaryDirectory();
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final List<CompressedImage> results = [];
 
       if (!await file.exists()) {
-        print("File does not exist: ${file.path}");
+        // print("File does not exist: ${file.path}");
         _isProcessing = false;
         notifyListeners();
         return;
@@ -54,7 +54,7 @@ class ImageCompressorViewModel extends ChangeNotifier {
       final originalImage = img.decodeImage(bytes);
 
       if (originalImage == null) {
-        print("Failed to decode image");
+        // print("Failed to decode image");
         _isProcessing = false;
         notifyListeners();
         throw Exception('Failed to decode image. Try another file.');
@@ -62,7 +62,7 @@ class ImageCompressorViewModel extends ChangeNotifier {
 
       for (var q in qualities) {
         final targetPath = '${tempDir.path}/compressed_${timestamp}_$q.jpg';
-        print("Compressing with quality $q to: $targetPath");
+        // print("Compressing with quality $q to: $targetPath");
 
         final compressedBytes = img.encodeJpg(originalImage, quality: q);
 
@@ -70,7 +70,7 @@ class ImageCompressorViewModel extends ChangeNotifier {
         await compressedFile.writeAsBytes(compressedBytes);
 
         final fileSize = compressedFile.lengthSync();
-        print("Compression successful for quality $q, file size: $fileSize");
+        // print("Compression successful for quality $q, file size: $fileSize");
 
         results.add(
           CompressedImage(
@@ -84,9 +84,9 @@ class ImageCompressorViewModel extends ChangeNotifier {
       _compressed.addAll(results);
       _isProcessing = false;
       notifyListeners();
-      print("UI updated with ${results.length} compressed images");
+      // print("UI updated with ${results.length} compressed images");
     } catch (e) {
-      print("Error during compression: $e");
+      // print("Error during compression: $e");
       _isProcessing = false;
       notifyListeners();
       rethrow; // Allow view to handle the error
@@ -100,27 +100,29 @@ class ImageCompressorViewModel extends ChangeNotifier {
               ? 'original_image.jpg'
               : 'compressed_${quality}_percent.jpg';
 
-      final path = await getSavePath(
+      final fileSaveLocation = await getSaveLocation(
         suggestedName: fileName,
         acceptedTypeGroups: [
           const XTypeGroup(label: 'JPEG Images', extensions: ['jpg', 'jpeg']),
         ],
       );
 
+      final path = fileSaveLocation?.path;
+
       if (path != null) {
         // Create a new file at the destination path
         final destinationFile = File(path);
-        
+
         // Check if the destination directory exists
         final directory = Directory(destinationFile.parent.path);
         if (!await directory.exists()) {
           await directory.create(recursive: true);
         }
-        
+
         // Read bytes from source and write to destination
         final bytes = await imageFile.readAsBytes();
         await destinationFile.writeAsBytes(bytes);
-        
+
         print("Image successfully saved to: $path");
         return path;
       }
@@ -143,11 +145,12 @@ class ImageCompressorViewModel extends ChangeNotifier {
   Future<String?> _saveImageMacOSFallback(File imageFile, int quality) async {
     // Get the Downloads folder - a common location accessible on macOS
     final downloadsDir = '${Platform.environment['HOME']}/Downloads';
-    final fileName = quality == 0
-        ? 'original_image.jpg'
-        : 'compressed_${quality}_percent.jpg';
+    final fileName =
+        quality == 0
+            ? 'original_image.jpg'
+            : 'compressed_${quality}_percent.jpg';
     final savePath = '$downloadsDir/$fileName';
-    
+
     // Copy the file directly to Downloads
     await imageFile.copy(savePath);
     print("Image saved to Downloads folder: $savePath");

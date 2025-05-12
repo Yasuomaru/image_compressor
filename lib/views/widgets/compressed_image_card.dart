@@ -8,10 +8,10 @@ class CompressedImageCard extends StatelessWidget {
   final ImageCompressorViewModel viewModel;
 
   const CompressedImageCard({
-    Key? key,
+    super.key,
     required this.image,
     required this.viewModel,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -88,6 +88,9 @@ class CompressedImageCard extends StatelessWidget {
         image.file,
         image.quality,
       );
+
+      if (!context.mounted) return;
+
       if (path != null) {
         ScaffoldMessenger.of(
           context,

@@ -13,6 +13,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Image Compression Demo',
       home: const ImageCompressorPage(),
+      theme: ThemeData(primarySwatch: Colors.red),
       debugShowCheckedModeBanner: false,
       darkTheme: ThemeData.dark(),
       themeMode: ThemeMode.system,

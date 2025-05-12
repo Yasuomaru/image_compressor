@@ -7,7 +7,7 @@ import 'widgets/compressed_image_card.dart';
 import 'widgets/image_preview_dialog.dart';
 
 class ImageCompressorPage extends StatelessWidget {
-  const ImageCompressorPage({Key? key}) : super(key: key);
+  const ImageCompressorPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +19,7 @@ class ImageCompressorPage extends StatelessWidget {
 }
 
 class _ImageCompressorView extends StatelessWidget {
-  const _ImageCompressorView({Key? key}) : super(key: key);
+  const _ImageCompressorView();
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +78,7 @@ class _ImageCompressorView extends StatelessWidget {
           ),
           Container(
             padding: const EdgeInsets.all(8),
-            color: Theme.of(context).colorScheme.surfaceVariant,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
             child: InkWell(
               onTap: () => _showOriginalPreview(context, viewModel),
               child: Column(
@@ -170,6 +170,8 @@ class _ImageCompressorView extends StatelessWidget {
     if ((file.mimeType?.startsWith('image/') ?? false) || isImageByExtension) {
       try {
         await viewModel.compressImage(File(file.path));
+
+        if (!context.mounted) return;
       } catch (e) {
         ScaffoldMessenger.of(
           context,
